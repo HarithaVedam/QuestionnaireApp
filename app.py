@@ -34,7 +34,8 @@ def save_answers(student_name, questions, answers):
 st.title("Online Exam Platform")
 
 student_name = st.text_input("Enter your name:")
-num_questions = st.number_input("Number of questions to attempt:", min_value=1, step=1)
+num_questions = 5
+#num_questions = st.number_input("Number of questions to attempt:", min_value=1, step=1)
 
 if st.button("Start Exam") and student_name and num_questions:
     questions = load_questions(num_questions)
@@ -47,7 +48,7 @@ if st.button("Start Exam") and student_name and num_questions:
         if st.button("Submit Answers"):
             save_answers(student_name, questions, answers)
 
-st.info("Upload a CSV file with a 'Questions' column to get started.")
+#st.info("Upload a CSV file with a 'Questions' column to get started.")
 
 # To run the app locally: `streamlit run app.py`
 # For deployment: Push to GitHub and deploy via Streamlit Community Cloud!
