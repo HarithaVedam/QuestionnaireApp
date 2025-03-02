@@ -4,6 +4,13 @@ import random
 
 QUESTIONS_FILE = 'questions.csv'
 
+# Initialize session state
+if 'answers' not in st.session_state:
+    st.session_state.answers = []
+
+if 'questions' not in st.session_state:
+    st.session_state.questions = []
+
 # Load questions from CSV
 def load_questions(num_questions):
     try:
@@ -38,15 +45,15 @@ num_questions = 5
 #num_questions = st.number_input("Number of questions to attempt:", min_value=1, step=1)
 
 if st.button("Start Exam") and student_name and num_questions:
-    questions = load_questions(num_questions)
+    st.session_state.questions = load_questions(num_questions)
+    st.session_state.answers = [""] * len(st.session_state.questions)
     
-    if questions:
-        answers = []
-        for question in questions:
-            answers.append(st.text_area(question))
-        
+    if st.session_state.questions:
+        for i, question in enumerate(st.session_state.questions):
+            st.session_state.answers[i] = st.text_area(question, value=st.session_state.answers[i])
+
         if st.button("Submit Answers"):
-            save_answers(student_name, questions, answers)
+            save_answers(student_name, st.session_state.questions, st.session_state.answers)
 
 #st.info("Upload a CSV file with a 'Questions' column to get started.")
 
