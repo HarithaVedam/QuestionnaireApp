@@ -2,8 +2,14 @@ import streamlit as st
 import pandas as pd
 import random
 import gspread
-from google.oauth2.service_account import Credentials
+from oauth2client.service_account import ServiceAccountCredentials
 
+# Load credentials from Streamlit secrets
+creds = st.secrets["gcp_service_account"]
+
+# Use gspread to connect to Google Sheets
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(dict(creds))
+client = gspread.authorize(credentials)
 
 QUESTIONS_FILE = 'questions.csv'
 SHEET_NAME = 'Exam Results'
