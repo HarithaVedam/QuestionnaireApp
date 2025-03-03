@@ -31,10 +31,14 @@ except FileNotFoundError:
 def save_responses(questions, answers, student_name):
     # Save responses in a new sheet named after the student
     try:
-        worksheet = client.open("Exam Results").worksheet(student_name)
+        worksheet = client.open("QuestionnaireResponses").worksheet(student_name)
+        st.warning(f"Answers for {student_name} already exist and will be overwritten.")
+        client.open("QuestionnaireResponses").del_worksheet(worksheet)
     except gspread.WorksheetNotFound:
-        worksheet = client.open("Exam Results").add_worksheet(title=student_name, rows="100", cols="2")
-        worksheet.append_row(["Question", "Answer"])
+        pass
+    
+    worksheet = client.open("QuestionnaireResponses").add_worksheet(title=student_name, rows="100", cols="2")
+    worksheet.append_row(["Question", "Answer"])
 
     for q, a in zip(questions, answers):
         worksheet.append_row([q, a])
@@ -62,9 +66,14 @@ if not st.session_state.submission_complete:
     if st.button("Submit"):
         if st.session_state.student_name.strip():
             save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
-            st.session_state.clear()
-            st.empty()
+            # Clear the form and show success message
+            st.session_state.questions = []
+            st.session_state.answers = []
+            st.session_state.student_name = ""
+            st.session_state.submission_complete = True
             st.markdown("<h2 style='text-align: center; color: green;'>Thank you for submitting responses. You'll hear from us soon.</h2>", unsafe_allow_html=True)
-            st.stop()  # Immediately stop the script to clear the screen
+            st.stop()
         else:
             st.error("Please enter your name before submitting.")
+else:
+    st.markdown("<h2 style='text-align: center; color: green;'>Thank you for submitting responses. You'll hear from us soon.</h2>", unsafe_allow_html=True)
