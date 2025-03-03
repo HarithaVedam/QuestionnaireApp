@@ -31,9 +31,9 @@ except FileNotFoundError:
 def save_responses(questions, answers, student_name):
     # Save responses in a new sheet named after the student
     try:
-        worksheet = client.open("QuestionnaireResponses").worksheet(student_name)
+        worksheet = client.open("Exam Results").worksheet(student_name)
     except gspread.WorksheetNotFound:
-        worksheet = client.open("QuestionnaireResponses").add_worksheet(title=student_name, rows="100", cols="2")
+        worksheet = client.open("Exam Results").add_worksheet(title=student_name, rows="100", cols="2")
         worksheet.append_row(["Question", "Answer"])
 
     for q, a in zip(questions, answers):
@@ -44,21 +44,21 @@ st.title("Python-Questionnaire")
 
 num_questions = 5
 
-if 'Questions' in df.columns:
-    selected_questions = random.sample(df['Questions'].tolist(), num_questions)
-    st.session_state.questions = selected_questions
-    st.session_state.answers = [""] * len(selected_questions)
-    st.session_state.student_name = st.text_input("Enter your name:")
+if 'questions' not in st.session_state:
+    if 'Questions' in df.columns:
+        st.session_state.questions = random.sample(df['Questions'].dropna().tolist(), num_questions)
+        st.session_state.answers = [""] * len(st.session_state.questions)
+        st.session_state.student_name = ""
 
-    for i, question in enumerate(st.session_state.questions):
-        st.session_state.answers[i] = st.text_area(question, st.session_state.answers[i])
+st.session_state.student_name = st.text_input("Enter your name:", value=st.session_state.student_name)
 
-    if st.button("Submit"):
-        if st.session_state.student_name.strip():
-            save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
-            st.empty()
-            st.success("Thank you for submitting answers. You'll hear back from us soon!")
-        else:
-            st.error("Please enter your name before submitting.")
-else:
-    st.error("Questions column not found in the CSV file.")
+for i, question in enumerate(st.session_state.questions):
+    st.session_state.answers[i] = st.text_area(question, value=st.session_state.answers[i], key=f"answer_{i}")
+
+if st.button("Submit"):
+    if st.session_state.student_name.strip():
+        save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
+        st.session_state.clear()
+        st.success("Thank you for submitting answers. You'll hear back from us soon!")
+    else:
+        st.error("Please enter your name before submitting.")
