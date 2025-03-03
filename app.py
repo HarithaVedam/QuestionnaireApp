@@ -1,8 +1,13 @@
 import streamlit as st
 import pandas as pd
 import random
+import gspread
+from google.oauth2.service_account import Credentials
+
 
 QUESTIONS_FILE = 'questions.csv'
+SHEET_NAME = 'Exam Results'
+CREDENTIALS_FILE = 'questionnaireapp-452611-633c53c55ba7.json'
 
 # Load questions from CSV
 def load_questions(num_questions):
@@ -19,17 +24,30 @@ def load_questions(num_questions):
         st.error("Questions file not found! Please contact the administrator.")
         st.stop()
         return []
+    
+# Save answers to Google Sheets
+def save_answers_to_google_sheets(student_name, questions, answers):
+    # Authenticate with Google Sheets
+    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"])
+    client = gspread.authorize(creds)
+    
+    # Open the spreadsheet
+    try:
+        sheet = client.open(SHEET_NAME)
+    except gspread.SpreadsheetNotFound:
+        st.error(f"Spreadsheet '{SHEET_NAME}' not found. Make sure it exists and is shared with your service account.")
+        return
+    
+    # Create a new sheet for the student (or overwrite if exists)
+    try:
+        worksheet = sheet.worksheet(student_name)
+        sheet.del_worksheet(worksheet)  # Delete existing sheet if resubmitting
+    except gspread.WorksheetNotFound:
+        pass  # No existing sheet, so we can create a new one
 
-# Save answers to CSV
-def save_answers(student_name, questions, answers):
-    df = pd.read_csv(QUESTIONS_FILE)
-    if student_name in df.columns:
-        st.warning(f"Answers for {student_name} already exist. Overwriting...")
-
-    for i, question in enumerate(questions):
-        df.loc[df['Questions'] == question, student_name] = answers[i]
-    df.to_csv(QUESTIONS_FILE, index=False)
-    #st.success("Answers saved successfully!")
+    # Add the student's answers
+    worksheet = sheet.add_worksheet(title=student_name, rows=len(questions) + 1, cols=2)
+    worksheet.update([["Questions", "Answers"]] + list(zip(questions, answers)))
 
 # Initialize session state
 if 'questions' not in st.session_state:
@@ -63,9 +81,7 @@ else:
             st.session_state.answers[i] = st.text_area(question, value=st.session_state.answers[i], key=f"answer_{i}")
 
         if st.button("Submit Answers"):
-            save_answers(student_name, st.session_state.questions, st.session_state.answers)
+            save_answers_to_google_sheets(student_name, st.session_state.questions, st.session_state.answers)
             st.session_state.exam_started = False
             st.session_state.submission_complete = True
-            st.session_state.questions = []
-            st.session_state.answers = []
-
+            
