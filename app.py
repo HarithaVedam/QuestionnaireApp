@@ -62,9 +62,8 @@ if not st.session_state.submission_complete:
     if st.button("Submit"):
         if st.session_state.student_name.strip():
             save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
-            st.session_state.questions = []  # Clear the questions
-            st.session_state.answers = []    # Clear the answers
             st.session_state.clear()
+            st.empty()
             st.session_state.submission_complete = True
             st.markdown("<h2 style='text-align: center; color: green;'>Thank you for submitting responses. You'll hear from us soon.</h2>", unsafe_allow_html=True)
             st.stop()  # Immediately stop the script to clear the screen
