@@ -64,6 +64,6 @@ if not st.session_state.submission_complete:
             save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
             st.session_state.clear()
             st.session_state.submission_complete = True
-            st.experimental_rerun()  # Clear the screen immediately after submission
+            st.stop()  # Immediately stop the script to clear the screen
         else:
             st.error("Please enter your name before submitting.")
