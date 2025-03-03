@@ -44,21 +44,26 @@ st.title("Python-Questionnaire")
 
 num_questions = 5
 
-if 'questions' not in st.session_state:
-    if 'Questions' in df.columns:
-        st.session_state.questions = random.sample(df['Questions'].dropna().tolist(), num_questions)
-        st.session_state.answers = [""] * len(st.session_state.questions)
-        st.session_state.student_name = ""
+if 'submission_complete' not in st.session_state:
+    st.session_state.submission_complete = False
 
-st.session_state.student_name = st.text_input("Enter your name:", value=st.session_state.student_name)
+if not st.session_state.submission_complete:
+    if 'questions' not in st.session_state:
+        if 'Questions' in df.columns:
+            st.session_state.questions = random.sample(df['Questions'].dropna().tolist(), num_questions)
+            st.session_state.answers = [""] * len(st.session_state.questions)
+            st.session_state.student_name = ""
 
-for i, question in enumerate(st.session_state.questions):
-    st.session_state.answers[i] = st.text_area(question, value=st.session_state.answers[i], key=f"answer_{i}")
+    st.session_state.student_name = st.text_input("Enter your name:", value=st.session_state.student_name)
 
-if st.button("Submit"):
-    if st.session_state.student_name.strip():
-        save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
-        st.session_state.clear()
-        st.success("Thank you for submitting answers. You'll hear back from us soon!")
-    else:
-        st.error("Please enter your name before submitting.")
+    for i, question in enumerate(st.session_state.questions):
+        st.session_state.answers[i] = st.text_area(question, value=st.session_state.answers[i], key=f"answer_{i}")
+
+    if st.button("Submit"):
+        if st.session_state.student_name.strip():
+            save_responses(st.session_state.questions, st.session_state.answers, st.session_state.student_name)
+            st.session_state.clear()
+            st.session_state.submission_complete = True
+            st.experimental_rerun()  # Clear the screen immediately after submission
+        else:
+            st.error("Please enter your name before submitting.")
