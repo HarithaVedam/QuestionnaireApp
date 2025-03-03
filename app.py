@@ -31,13 +31,13 @@ except FileNotFoundError:
 def save_responses(questions, answers, student_name):
     # Save responses in a new sheet named after the student
     try:
-        worksheet = client.open("QuestionnaireResponses").worksheet(student_name)
+        worksheet = client.open("Exam Results").worksheet(student_name)
         st.warning(f"Answers for {student_name} already exist and will be overwritten.")
-        client.open("QuestionnaireResponses").del_worksheet(worksheet)
+        client.open("Exam Results").del_worksheet(worksheet)
     except gspread.WorksheetNotFound:
         pass
     
-    worksheet = client.open("QuestionnaireResponses").add_worksheet(title=student_name, rows="100", cols="2")
+    worksheet = client.open("Exam Results").add_worksheet(title=student_name, rows="100", cols="2")
     worksheet.append_row(["Question", "Answer"])
 
     for q, a in zip(questions, answers):
